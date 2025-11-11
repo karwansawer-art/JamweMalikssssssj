@@ -101,11 +101,9 @@ interface HabitItemProps {
     user: User;
     onDelete: () => void;
     onToggleComplete: () => void;
-    userProfile: UserProfile;
-    setUserProfile: (profile: UserProfile) => void;
 }
 
-const HabitItem: React.FC<HabitItemProps> = ({ habit, user, onDelete, onToggleComplete, userProfile, setUserProfile }) => {
+const HabitItem: React.FC<HabitItemProps> = ({ habit, user, onDelete, onToggleComplete }) => {
     
     const [showReminderModal, setShowReminderModal] = useState(false);
     
@@ -209,8 +207,6 @@ const HabitItem: React.FC<HabitItemProps> = ({ habit, user, onDelete, onToggleCo
                     onClose={() => setShowReminderModal(false)}
                     habit={habit}
                     user={user}
-                    userProfile={userProfile}
-                    setUserProfile={setUserProfile}
                 />
             )}
         </>

@@ -14,13 +14,11 @@ interface CommunityPostsProps {
   user: User;
   currentUserProfile: UserProfile;
   isDeveloper: boolean;
-  setUserProfile: (profile: UserProfile) => void;
 }
 
 interface CommunityPostItemProps {
   post: CommunityPost;
   user: User;
-  currentUserProfile: UserProfile;
   isDeveloper: boolean;
   onFireReaction: (postId: string, isReacted: boolean) => void;
   onEdit: (post: CommunityPost) => void;
@@ -30,6 +28,7 @@ interface CommunityPostItemProps {
   onPinToggle: (postId: string | null) => void;
   isPinned: boolean;
   userProfiles: { [uid: string]: UserProfile };
+  guestReactions?: Set<string>;
 }
 
 const formatTimeAgo = (date: Date): string => {
@@ -42,13 +41,12 @@ const formatTimeAgo = (date: Date): string => {
   const days = Math.floor(hours / 24);
   if (days < 30) return `قبل ${days} يوم`;
   const months = Math.floor(days / 30);
-  return months < 12 ? `قبل ${months} شهر` : `قبل ${Math.floor(months / 12)} سنة`;
+  return months < 12 ? `قبل ${Math.floor(months / 12)} سنة` : `قبل ${Math.floor(months / 12)} سنة`;
 };
 
 const CommunityPostItem: React.FC<CommunityPostItemProps> = ({
   post,
   user,
-  currentUserProfile,
   isDeveloper,
   onFireReaction,
   onEdit,
@@ -58,6 +56,7 @@ const CommunityPostItem: React.FC<CommunityPostItemProps> = ({
   onPinToggle,
   isPinned,
   userProfiles,
+  guestReactions,
 }) => {
   const isMyPost = post.uid === user.uid;
   
@@ -65,19 +64,14 @@ const CommunityPostItem: React.FC<CommunityPostItemProps> = ({
   const displayName = profile ? profile.displayName : post.displayName;
   const photoURL = profile ? profile.photoURL : post.photoURL;
 
-  // Check if current user has reacted, using local storage for anonymous users
+  // Check if current user has reacted
   const userHasReacted = (post.fireReactions || []).includes(user.uid) ||
-                        (user.isAnonymous && (currentUserProfile.communityPostFireReactions?.has(post.id) ?? false));
+                        (user.isAnonymous && (guestReactions?.has(post.id) ?? false));
   
   // Calculate displayed fire count:
-  // Start with developer-set count
   let displayedFireCount = (post.developerFireCount || 0);
-  // Add reactions from authenticated users (stored in Firestore)
   displayedFireCount += (post.fireReactions || []).length;
-
-  // If the current user is anonymous AND they have reacted locally, add 1.
-  // Anonymous user reactions are NOT stored in `post.fireReactions` on Firestore.
-  if (user.isAnonymous && (currentUserProfile.communityPostFireReactions?.has(post.id) ?? false)) {
+  if (user.isAnonymous && (guestReactions?.has(post.id) ?? false)) {
       displayedFireCount += 1;
   }
 
@@ -189,7 +183,7 @@ const CommunityPostItem: React.FC<CommunityPostItemProps> = ({
 };
 
 
-const CommunityPosts: React.FC<CommunityPostsProps> = ({ user, currentUserProfile, isDeveloper, setUserProfile }) => {
+const CommunityPosts: React.FC<CommunityPostsProps> = ({ user, currentUserProfile, isDeveloper }) => {
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [pinnedPost, setPinnedPost] = useState<CommunityPost | null>(null);
   const [loading, setLoading] = useState(true);
@@ -202,7 +196,21 @@ const CommunityPosts: React.FC<CommunityPostsProps> = ({ user, currentUserProfil
   const [developerFireCountInput, setDeveloperFireCountInput] = useState<string>(''); // Keep as string for input
   const [fireCountError, setFireCountError] = useState<string>('');
   const [userProfiles, setUserProfiles] = useState<{ [uid: string]: UserProfile }>({});
+  const [guestReactions, setGuestReactions] = useState<Set<string>>(new Set());
 
+  useEffect(() => {
+    if (user.isAnonymous) {
+        try {
+            const storedReactions = localStorage.getItem('guestFireReactions');
+            if (storedReactions) {
+                setGuestReactions(new Set(JSON.parse(storedReactions)));
+            }
+        } catch (e) {
+            console.error("Failed to parse guest reactions from localStorage", e);
+            localStorage.removeItem('guestFireReactions');
+        }
+    }
+  }, [user.isAnonymous]);
 
   // Fetch pinned post
   useEffect(() => {
@@ -335,28 +343,26 @@ const CommunityPosts: React.FC<CommunityPostsProps> = ({ user, currentUserProfil
   };
 
   const handleFireReaction = async (postId: string, isReacted: boolean) => {
-    const postRef = doc(db, 'community_posts', postId);
     if (user.isAnonymous) {
-      // Ensure communityPostFireReactions is a Set. The App.tsx reviver should handle this.
-      const currentReactions = currentUserProfile.communityPostFireReactions || new Set<string>();
-      const updatedReactions = new Set(currentReactions); // Create a new Set from existing
-
+      const updatedReactions = new Set(guestReactions);
       if (isReacted) {
         updatedReactions.delete(postId);
       } else {
         updatedReactions.add(postId);
       }
-      setUserProfile({ ...currentUserProfile, communityPostFireReactions: updatedReactions });
+      setGuestReactions(updatedReactions);
+      localStorage.setItem('guestFireReactions', JSON.stringify(Array.from(updatedReactions)));
     } else {
-      try {
-        if (isReacted) {
-          await updateDoc(postRef, { fireReactions: arrayRemove(user.uid) });
-        } else {
-          await updateDoc(postRef, { fireReactions: arrayUnion(user.uid) });
+        const postRef = doc(db, 'community_posts', postId);
+        try {
+            if (isReacted) {
+                await updateDoc(postRef, { fireReactions: arrayRemove(user.uid) });
+            } else {
+                await updateDoc(postRef, { fireReactions: arrayUnion(user.uid) });
+            }
+        } catch (error) {
+            console.error("Error updating fire reaction:", error);
         }
-      } catch (error) {
-        console.error("Error updating fire reaction:", error);
-      }
     }
   };
 
@@ -425,22 +431,16 @@ const CommunityPosts: React.FC<CommunityPostsProps> = ({ user, currentUserProfil
       </header>
 
       <main className="space-y-4 p-4 pt-20">
-        {user.isAnonymous && (
-            <div className="bg-yellow-900/50 text-yellow-200 p-3 rounded-lg text-center text-sm mb-4">
-                كمستخدم زائر، لا يمكنك إضافة منشورات. يرجى إنشاء حساب لتتمكن من المشاركة.
-            </div>
-        )}
-
         {loading ? (
-          <p className="text-center text-sky-300 py-10">جارِ تحميل المنشورات...</p>
+          <div className="flex justify-center py-10">
+            <Spinner className="w-10 h-10 text-sky-400" />
+          </div>
         ) : (
           <>
             {pinnedPost && (
               <CommunityPostItem
-                key={pinnedPost.id}
                 post={pinnedPost}
                 user={user}
-                currentUserProfile={currentUserProfile}
                 isDeveloper={isDeveloper}
                 onFireReaction={handleFireReaction}
                 onEdit={handleEditPostClick}
@@ -450,15 +450,15 @@ const CommunityPosts: React.FC<CommunityPostsProps> = ({ user, currentUserProfil
                 onPinToggle={handlePinToggle}
                 isPinned={true}
                 userProfiles={userProfiles}
+                guestReactions={guestReactions}
               />
             )}
             {posts.length > 0 ? (
-              posts.map((post) => (
+              posts.map(post => (
                 <CommunityPostItem
                   key={post.id}
                   post={post}
                   user={user}
-                  currentUserProfile={currentUserProfile}
                   isDeveloper={isDeveloper}
                   onFireReaction={handleFireReaction}
                   onEdit={handleEditPostClick}
@@ -466,34 +466,27 @@ const CommunityPosts: React.FC<CommunityPostsProps> = ({ user, currentUserProfil
                   onApproveToggle={handleApproveToggle}
                   onSetDeveloperFireCount={handleSetDeveloperFireCount}
                   onPinToggle={handlePinToggle}
-                  isPinned={false} // Regular post
+                  isPinned={false}
                   userProfiles={userProfiles}
+                  guestReactions={guestReactions}
                 />
               ))
             ) : (
-              !pinnedPost && ( // Only show "no posts" message if no posts at all (not even pinned)
-                <div className="text-center py-16 px-4">
-                  <FireIcon className="w-24 h-24 mx-auto text-sky-700" />
-                  <h3 className="mt-4 text-xl font-semibold text-sky-300">لا توجد منشورات بعد</h3>
-                  {!user.isAnonymous && <p className="mt-2 text-sky-400">كن أول من يشارك منشوره!</p>}
-                </div>
-              )
+              !pinnedPost && <p className="text-center text-sky-400 py-10">لا توجد منشورات حتى الآن.</p>
             )}
           </>
         )}
       </main>
 
-      {showAddEditModal && (
-        <AddEditCommunityPostModal
-          isOpen={showAddEditModal}
-          onClose={() => setShowAddEditModal(false)}
-          user={user}
-          currentUserProfile={currentUserProfile}
-          postToEdit={postToEdit}
-        />
-      )}
+      <AddEditCommunityPostModal
+        isOpen={showAddEditModal}
+        onClose={() => setShowAddEditModal(false)}
+        user={user}
+        currentUserProfile={currentUserProfile}
+        postToEdit={postToEdit}
+      />
 
-      {isDeveloper && showFilterModal && (
+      {isDeveloper && (
         <CommunityModerationFilterModal
           isOpen={showFilterModal}
           onClose={() => setShowFilterModal(false)}
@@ -503,29 +496,23 @@ const CommunityPosts: React.FC<CommunityPostsProps> = ({ user, currentUserProfil
       )}
 
       {isDeveloper && showSetFireCountModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="w-full max-w-sm bg-sky-950/90 border border-sky-500/50 rounded-lg text-white p-6 space-y-4">
-                <h3 className="text-xl font-bold text-sky-200 text-center">تحديد عدد اللهيب</h3>
-                {fireCountError && <p className="text-red-400 text-sm text-center">{fireCountError}</p>}
-                <input
-                    type="number"
-                    value={developerFireCountInput}
-                    onChange={(e) => {
-                        setDeveloperFireCountInput(e.target.value);
-                        setFireCountError(''); // Clear error on input change
-                    }}
-                    placeholder="أدخل العدد"
-                    className="w-full bg-sky-800/60 border border-sky-700 rounded-lg py-2 px-4 text-white placeholder-sky-400/70 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                />
-                <div className="flex justify-end gap-3">
-                    <button onClick={() => setShowSetFireCountModal(false)} className="px-4 py-2 font-semibold text-white rounded-md bg-gray-600 hover:bg-gray-500">
-                        إلغاء
-                    </button>
-                    <button onClick={saveDeveloperFireCount} className="px-4 py-2 font-semibold text-white rounded-md bg-teal-600 hover:bg-teal-500">
-                        حفظ
-                    </button>
-                </div>
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[60] p-4">
+          <div className="w-full max-w-sm bg-sky-950 border border-orange-500/50 rounded-lg p-6 space-y-4 text-white">
+            <h3 className="text-xl font-bold text-orange-400 text-center">تحديد عدد اللهيب</h3>
+            <p className="text-sky-200 text-center">أدخل عدد اللهيب الذي تريده لهذا المنشور.</p>
+            {fireCountError && <p className="text-red-400 text-sm text-center">{fireCountError}</p>}
+            <input
+              type="number"
+              min="0"
+              value={developerFireCountInput}
+              onChange={(e) => setDeveloperFireCountInput(e.target.value)}
+              className="w-full bg-black/30 border border-orange-400/50 rounded-md p-2 text-center text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+            />
+            <div className="flex justify-center gap-4 pt-4">
+              <button onClick={() => setShowSetFireCountModal(false)} className="px-6 py-2 font-semibold text-white rounded-md bg-gray-600 hover:bg-gray-500">إلغاء</button>
+              <button onClick={saveDeveloperFireCount} className="px-6 py-2 font-semibold text-white rounded-md bg-orange-600 hover:bg-orange-500">حفظ</button>
             </div>
+          </div>
         </div>
       )}
     </div>

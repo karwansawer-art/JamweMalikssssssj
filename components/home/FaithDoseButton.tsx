@@ -9,10 +9,9 @@ import { ErrorAlert } from '../ui/Alert.tsx';
 interface FaithDoseButtonProps {
     user: User;
     userProfile: UserProfile;
-    setUserProfile: (profile: UserProfile) => void;
 }
 
-const FaithDoseButton: React.FC<FaithDoseButtonProps> = ({ user, userProfile, setUserProfile }) => {
+const FaithDoseButton: React.FC<FaithDoseButtonProps> = ({ user, userProfile }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [story, setStory] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -50,12 +49,7 @@ const FaithDoseButton: React.FC<FaithDoseButtonProps> = ({ user, userProfile, se
             setStory(contentToShow);
             
             const nextIndex = currentIndex + 1;
-             if (user.isAnonymous) {
-                const updatedProfile = { ...userProfile, storyIndex: nextIndex };
-                setUserProfile(updatedProfile);
-            } else {
-                await updateDoc(doc(db, "users", user.uid), { storyIndex: nextIndex });
-            }
+            await updateDoc(doc(db, "users", user.uid), { storyIndex: nextIndex });
         } catch (e) {
             console.error("Error fetching story or updating index:", e);
             setError("هەڵەیەک ڕوویدا لە وەرگرتنی چیرۆک.");

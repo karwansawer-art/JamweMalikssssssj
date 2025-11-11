@@ -331,9 +331,8 @@ const CoachAnalysisModal: React.FC<{
 interface FollowUpScreenProps {
     user: User;
     userProfile: UserProfile;
-    setUserProfile: (profile: UserProfile) => void;
 }
-const FollowUpScreen: React.FC<FollowUpScreenProps> = ({ user, userProfile, setUserProfile }) => {
+const FollowUpScreen: React.FC<FollowUpScreenProps> = ({ user, userProfile }) => {
     const [logs, setLogs] = useState<{ [key: string]: IFollowUpLog }>({});
     const [loading, setLoading] = useState(true);
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -349,33 +348,23 @@ const FollowUpScreen: React.FC<FollowUpScreenProps> = ({ user, userProfile, setU
         backfillAttempted.current = false; // Reset on user change
         setLoading(true); // Set loading true on user change
 
-        if (user.isAnonymous) {
-            const guestLogs = userProfile.followUpLogs || {};
-            const processedLogs: { [key: string]: IFollowUpLog } = {};
-            for(const key in guestLogs) {
-                processedLogs[key] = { ...guestLogs[key], timestamp: new Date(guestLogs[key].timestamp) };
-            }
-            setLogs(processedLogs);
-            setLoading(false);
-        } else {
-            const q = query(collection(db, 'users', user.uid, 'followUpLogs'));
-            const unsubscribe = onSnapshot(q, (snapshot) => {
-                const fetchedLogs: { [key: string]: IFollowUpLog } = {};
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    if (data.timestamp && typeof (data.timestamp as Timestamp).toDate === 'function') {
-                        fetchedLogs[doc.id] = { status: data.status, timestamp: (data.timestamp as Timestamp).toDate() };
-                    }
-                });
-                setLogs(fetchedLogs);
-                setLoading(false);
-            }, (error) => {
-                console.error("Error fetching follow-up logs:", error);
-                setLoading(false);
+        const q = query(collection(db, 'users', user.uid, 'followUpLogs'));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const fetchedLogs: { [key: string]: IFollowUpLog } = {};
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.timestamp && typeof (data.timestamp as Timestamp).toDate === 'function') {
+                    fetchedLogs[doc.id] = { status: data.status, timestamp: (data.timestamp as Timestamp).toDate() };
+                }
             });
-            return () => unsubscribe();
-        }
-    }, [user, userProfile.followUpLogs]); // Depend only on the relevant part of the profile for anonymous users
+            setLogs(fetchedLogs);
+            setLoading(false);
+        }, (error) => {
+            console.error("Error fetching follow-up logs:", error);
+            setLoading(false);
+        });
+        return () => unsubscribe();
+    }, [user]);
 
     useEffect(() => {
         if (loading || backfillAttempted.current) return;
@@ -402,21 +391,16 @@ const FollowUpScreen: React.FC<FollowUpScreenProps> = ({ user, userProfile, setU
 
         const keys = Object.keys(logsToCreate);
         if (keys.length > 0) {
-            if (user.isAnonymous) {
-                const updatedLogs = { ...userProfile.followUpLogs, ...logsToCreate };
-                setUserProfile({ ...userProfile, followUpLogs: updatedLogs });
-            } else {
-                 const promises = keys.map(dateKey => {
-                    const logRef = doc(db, 'users', user.uid, 'followUpLogs', dateKey);
-                    return setDoc(logRef, { status: 'absent', timestamp: Timestamp.fromDate(logsToCreate[dateKey].timestamp) });
-                });
-                Promise.all(promises).catch(error => {
-                    console.error("Failed to backfill absent logs:", error);
-                });
-            }
+            const promises = keys.map(dateKey => {
+                const logRef = doc(db, 'users', user.uid, 'followUpLogs', dateKey);
+                return setDoc(logRef, { status: 'absent', timestamp: Timestamp.fromDate(logsToCreate[dateKey].timestamp) });
+            });
+            Promise.all(promises).catch(error => {
+                console.error("Failed to backfill absent logs:", error);
+            });
         }
         backfillAttempted.current = true;
-    }, [logs, loading, user, userProfile, setUserProfile]);
+    }, [logs, loading, user, userProfile]);
 
 
     const sessionStats = useMemo(() => {
@@ -453,35 +437,21 @@ const FollowUpScreen: React.FC<FollowUpScreenProps> = ({ user, userProfile, setU
         }
         
         const todayKey = getISODate(new Date());
-        if (user.isAnonymous) {
-            // FIX: Explicitly type the new log object to match IFollowUpLog
-            const newLog: IFollowUpLog = { status, timestamp: new Date() };
-            const updatedLogs = { ...userProfile.followUpLogs, [todayKey]: newLog };
-            setUserProfile({ ...userProfile, followUpLogs: updatedLogs });
-        } else {
-            const logRef = doc(db, 'users', user.uid, 'followUpLogs', todayKey);
-            try { await setDoc(logRef, { status, timestamp: serverTimestamp() }, { merge: true }); }
-            catch (error) { console.error("Error logging status:", error); }
-        }
+        const logRef = doc(db, 'users', user.uid, 'followUpLogs', todayKey);
+        try { await setDoc(logRef, { status, timestamp: serverTimestamp() }, { merge: true }); }
+        catch (error) { console.error("Error logging status:", error); }
     };
     
     const handleConfirmRelapse = async () => {
         setShowRelapseConfirm(false);
         const newStartDate = new Date();
         try {
-            if (user.isAnonymous) {
-                const todayKey = getISODate(new Date());
-                // FIX: Explicitly type the new log object to match IFollowUpLog
-                const newLog: IFollowUpLog = { status: 'relapse', timestamp: new Date() };
-                const updatedLogs = { ...userProfile.followUpLogs, [todayKey]: newLog };
-                setUserProfile({ ...userProfile, startDate: newStartDate, followUpLogs: updatedLogs });
-            } else {
-                const todayKey = getISODate(new Date());
-                const logRef = doc(db, 'users', user.uid, 'followUpLogs', todayKey);
-                await setDoc(logRef, { status: 'relapse', timestamp: serverTimestamp() }, { merge: true });
-                const userDocRef = doc(db, 'users', user.uid);
-                await setDoc(userDocRef, { startDate: newStartDate }, { merge: true });
-            }
+            const todayKey = getISODate(new Date());
+            const logRef = doc(db, 'users', user.uid, 'followUpLogs', todayKey);
+            await setDoc(logRef, { status: 'relapse', timestamp: serverTimestamp() }, { merge: true });
+            const userDocRef = doc(db, 'users', user.uid);
+            await setDoc(userDocRef, { startDate: newStartDate }, { merge: true });
+
             for (const key in localStorage) {
                 if (key.startsWith(`celebrated_${user.uid}_`)) { localStorage.removeItem(key); }
             }
@@ -491,35 +461,20 @@ const FollowUpScreen: React.FC<FollowUpScreenProps> = ({ user, userProfile, setU
     const handleFirstSlipUp = async () => {
         setShowSlipUpWarning(false);
         const todayKey = getISODate(new Date());
-        if(user.isAnonymous) {
-            // FIX: Explicitly type the new log object to match IFollowUpLog
-            const newLog: IFollowUpLog = { status: 'slip_up', timestamp: new Date() };
-            const updatedLogs = { ...userProfile.followUpLogs, [todayKey]: newLog };
-            setUserProfile({ ...userProfile, followUpLogs: updatedLogs });
-        } else {
-            const logRef = doc(db, 'users', user.uid, 'followUpLogs', todayKey);
-            try { await setDoc(logRef, { status: 'slip_up', timestamp: serverTimestamp() }, { merge: true }); }
-            catch (error) { console.error("Error logging first slip-up:", error); }
-        }
+        const logRef = doc(db, 'users', user.uid, 'followUpLogs', todayKey);
+        try { await setDoc(logRef, { status: 'slip_up', timestamp: serverTimestamp() }, { merge: true }); }
+        catch (error) { console.error("Error logging first slip-up:", error); }
     };
 
     const handleConfirmSlipUpReset = async () => {
         setShowSlipUpConfirm(false);
         const newStartDate = new Date();
         try {
-            if (user.isAnonymous) {
-                 const todayKey = getISODate(new Date());
-                // FIX: Explicitly type the new log object to match IFollowUpLog
-                const newLog: IFollowUpLog = { status: 'slip_up', timestamp: new Date() };
-                const updatedLogs = { ...userProfile.followUpLogs, [todayKey]: newLog };
-                setUserProfile({ ...userProfile, startDate: newStartDate, followUpLogs: updatedLogs });
-            } else {
-                const todayKey = getISODate(new Date());
-                const logRef = doc(db, 'users', user.uid, 'followUpLogs', todayKey);
-                await setDoc(logRef, { status: 'slip_up', timestamp: serverTimestamp() }, { merge: true });
-                const userDocRef = doc(db, 'users', user.uid);
-                await setDoc(userDocRef, { startDate: newStartDate }, { merge: true });
-            }
+            const todayKey = getISODate(new Date());
+            const logRef = doc(db, 'users', user.uid, 'followUpLogs', todayKey);
+            await setDoc(logRef, { status: 'slip_up', timestamp: serverTimestamp() }, { merge: true });
+            const userDocRef = doc(db, 'users', user.uid);
+            await setDoc(userDocRef, { startDate: newStartDate }, { merge: true });
             for (const key in localStorage) {
                 if (key.startsWith(`celebrated_${user.uid}_`)) { localStorage.removeItem(key); }
             }

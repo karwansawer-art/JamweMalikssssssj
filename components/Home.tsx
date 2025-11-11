@@ -63,7 +63,6 @@ interface HomeProps {
   setShowNotifications: (show: boolean) => void;
   setShowLeaderboard: (show: boolean) => void;
   setShowBadges: (show: boolean) => void;
-  setUserProfile: (profile: UserProfile) => void;
 }
 
 const defaultCounterImage = 'https://images.unsplash.com/photo-1542496658-e3962b04f762?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
@@ -75,7 +74,6 @@ const Home: React.FC<HomeProps> = ({
   setShowLeaderboard,
   setShowBadges,
   userProfile,
-  setUserProfile
 }) => {
     const startDate = userProfile.startDate;
     const [globalCounterImage, setGlobalCounterImage] = useState<string | null>(null);
@@ -170,12 +168,7 @@ const Home: React.FC<HomeProps> = ({
 
     const handleStartCounter = () => {
         const now = new Date();
-        if (user.isAnonymous) {
-            const updatedProfile = { ...userProfile, startDate: now };
-            setUserProfile(updatedProfile);
-        } else {
-            setDoc(doc(db, "users", user.uid), { startDate: now }, { merge: true });
-        }
+        setDoc(doc(db, "users", user.uid), { startDate: now }, { merge: true });
     };
 
     const diff = startDate ? getTimeDifference(startDate, now) : { months: 0, days: 0, hours: 0, minutes: 0, seconds: 0, milliseconds: 0 };
@@ -263,10 +256,10 @@ const Home: React.FC<HomeProps> = ({
               </button>
               <div className="mt-8 flex flex-col gap-4 pb-20">
                 {recoveryCompanionButton}
-                <IntenseUrgeButton user={user} userProfile={userProfile} setUserProfile={setUserProfile} />
-                <EmergencyButton user={user} userProfile={userProfile} setUserProfile={setUserProfile} />
-                <CommitmentDocument user={user} userProfile={userProfile} setUserProfile={setUserProfile}/>
-                <FaithDoseButton user={user} userProfile={userProfile} setUserProfile={setUserProfile} />
+                <IntenseUrgeButton user={user} userProfile={userProfile} />
+                <EmergencyButton user={user} userProfile={userProfile} />
+                <CommitmentDocument user={user} userProfile={userProfile} />
+                <FaithDoseButton user={user} userProfile={userProfile} />
               </div>
             </main>
             {showFreedomModelProgram && (
@@ -329,10 +322,10 @@ const Home: React.FC<HomeProps> = ({
                 </button>
                 <div className="mt-8 flex flex-col gap-4 pb-20">
                     {recoveryCompanionButton}
-                    <IntenseUrgeButton user={user} userProfile={userProfile} setUserProfile={setUserProfile} />
-                    <EmergencyButton user={user} userProfile={userProfile} setUserProfile={setUserProfile} />
-                    <CommitmentDocument user={user} userProfile={userProfile} setUserProfile={setUserProfile}/>
-                    <FaithDoseButton user={user} userProfile={userProfile} setUserProfile={setUserProfile} />
+                    <IntenseUrgeButton user={user} userProfile={userProfile} />
+                    <EmergencyButton user={user} userProfile={userProfile} />
+                    <CommitmentDocument user={user} userProfile={userProfile} />
+                    <FaithDoseButton user={user} userProfile={userProfile} />
                 </div>
             </main>
             {showFreedomModelProgram && (

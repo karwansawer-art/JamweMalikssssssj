@@ -28,7 +28,6 @@ interface MainScreenProps {
   userProfile: UserProfile;
   handleSignOut: () => void;
   setAppLocked: (locked: boolean) => void;
-  setUserProfile: (profile: UserProfile) => void;
 }
 
 const NavItem: React.FC<{
@@ -50,7 +49,7 @@ const NavItem: React.FC<{
 );
 
 
-const MainScreen: React.FC<MainScreenProps> = ({ user, userProfile, handleSignOut, setAppLocked, setUserProfile }) => {
+const MainScreen: React.FC<MainScreenProps> = ({ user, userProfile, handleSignOut, setAppLocked }) => {
   const [activeTab, setActiveTab] = useState<Tab>('home');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
@@ -181,31 +180,31 @@ const MainScreen: React.FC<MainScreenProps> = ({ user, userProfile, handleSignOu
     <div className="w-full max-w-sm text-white flex flex-col h-screen">
       <div className="flex-grow overflow-y-auto pb-16">
         <div style={{ display: activeTab === 'home' ? 'block' : 'none' }} className="h-full">
-            <Home user={user} userProfile={userProfile} setUserProfile={setUserProfile} setActiveTab={setActiveTab} setShowNotifications={setShowNotifications} setShowLeaderboard={setShowLeaderboard} setShowBadges={setShowBadges}/>
+            <Home user={user} userProfile={userProfile} setActiveTab={setActiveTab} setShowNotifications={setShowNotifications} setShowLeaderboard={setShowLeaderboard} setShowBadges={setShowBadges}/>
         </div>
         <div style={{ display: activeTab === 'journal' ? 'block' : 'none' }} className="h-full">
-            <Journal user={user} userProfile={userProfile} setUserProfile={setUserProfile} />
+            <Journal user={user} userProfile={userProfile} />
         </div>
         <div style={{ display: activeTab === 'community-posts' ? 'block' : 'none' }} className="h-full">
-            <CommunityPosts user={user} currentUserProfile={userProfile} isDeveloper={isDeveloper} setUserProfile={setUserProfile} />
+            <CommunityPosts user={user} currentUserProfile={userProfile} isDeveloper={isDeveloper} />
         </div>
         <div style={{ display: activeTab === 'habits' ? 'block' : 'none' }} className="h-full">
-            <HabitsScreen user={user} userProfile={userProfile} setUserProfile={setUserProfile} />
+            <HabitsScreen user={user} />
         </div>
         <div style={{ display: activeTab === 'chat' ? 'block' : 'none' }} className="h-full">
             <Chat user={user} currentUserProfile={userProfile} showAlert={showAlert} isDeveloper={isDeveloper} onClose={() => setActiveTab('home')} />
         </div>
         <div style={{ display: activeTab === 'follow-up' ? 'block' : 'none' }} className="h-full">
-            <FollowUpScreen user={user} userProfile={userProfile} setUserProfile={setUserProfile} />
+            <FollowUpScreen user={user} userProfile={userProfile} />
         </div>
         <div style={{ display: activeTab === 'library' ? 'block' : 'none' }} className="h-full">
             <Library user={user} isDeveloper={isDeveloper} />
         </div>
         <div style={{ display: activeTab === 'settings' ? 'block' : 'none' }} className="h-full">
-            <Settings user={user} userProfile={userProfile} setUserProfile={setUserProfile} handleSignOut={handleSignOut} setAppLocked={setAppLocked} showAlert={showAlert} isDeveloper={isDeveloper}/>
+            <Settings user={user} userProfile={userProfile} handleSignOut={handleSignOut} setAppLocked={setAppLocked} showAlert={showAlert} isDeveloper={isDeveloper}/>
         </div>
         <div style={{ display: activeTab === 'counter-settings' ? 'block' : 'none' }} className="h-full">
-            <CounterSettings user={user} userProfile={userProfile} setUserProfile={setUserProfile} setActiveTab={setActiveTab} isDeveloper={isDeveloper}/>
+            <CounterSettings user={user} userProfile={userProfile} setActiveTab={setActiveTab} isDeveloper={isDeveloper}/>
         </div>
       </div>
       

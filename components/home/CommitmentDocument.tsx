@@ -8,10 +8,9 @@ import type { UserProfile } from '../../types.ts';
 interface CommitmentDocumentProps {
     user: User;
     userProfile: UserProfile;
-    setUserProfile: (profile: UserProfile) => void;
 }
 
-const CommitmentDocument: React.FC<CommitmentDocumentProps> = ({ user, userProfile, setUserProfile }) => {
+const CommitmentDocument: React.FC<CommitmentDocumentProps> = ({ user, userProfile }) => {
     const initialText = userProfile.commitmentDocument;
     const [isOpen, setIsOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -47,12 +46,7 @@ const CommitmentDocument: React.FC<CommitmentDocumentProps> = ({ user, userProfi
         setIsLoading(true);
         setFeedback("");
         try {
-            if (user.isAnonymous) {
-                const updatedProfile = { ...userProfile, commitmentDocument: text };
-                setUserProfile(updatedProfile);
-            } else {
-                await setDoc(doc(db, 'users', user.uid), { commitmentDocument: text }, { merge: true });
-            }
+            await setDoc(doc(db, 'users', user.uid), { commitmentDocument: text }, { merge: true });
             setFeedback("تم الحفظ بنجاح!");
             hasBeenSaved.current = true;
             setIsEditing(false);

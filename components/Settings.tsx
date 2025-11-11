@@ -76,12 +76,7 @@ const EditProfileModal: React.FC<{
             onClose();
             return;
         }
-        if (user.isAnonymous) {
-            // This is a bit of a tricky UX. Guests can't really "update" their profile
-            // in a way that persists if they log out. We can show an alert.
-            showAlert("لا يمكن تحديث ملفات تعريف الضيوف. يرجى إنشاء حساب.", "error");
-            return;
-        }
+        
         setLoading(true);
         try {
             await updateProfile(user, { displayName, photoURL });
@@ -193,10 +188,9 @@ interface SettingsProps {
     setAppLocked: (locked: boolean) => void;
     showAlert: (message: string, type: 'success' | 'error') => void;
     isDeveloper: boolean;
-    setUserProfile: (profile: UserProfile) => void;
 }
 
-const Settings: React.FC<SettingsProps> = ({ user, userProfile, handleSignOut, setAppLocked, showAlert, isDeveloper, setUserProfile }) => {
+const Settings: React.FC<SettingsProps> = ({ user, userProfile, handleSignOut, setAppLocked, showAlert, isDeveloper }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -261,14 +255,9 @@ const Settings: React.FC<SettingsProps> = ({ user, userProfile, handleSignOut, s
     const handleUnblockUser = async (uidToUnblock: string) => {
         if (!userProfile.blockedUsers?.includes(uidToUnblock)) return;
         try {
-            if (user.isAnonymous) {
-                const updatedBlockedUsers = userProfile.blockedUsers?.filter(uid => uid !== uidToUnblock);
-                setUserProfile({ ...userProfile, blockedUsers: updatedBlockedUsers });
-            } else {
-                await updateDoc(doc(db, 'users', user.uid), {
-                    blockedUsers: arrayRemove(uidToUnblock)
-                });
-            }
+            await updateDoc(doc(db, 'users', user.uid), {
+                blockedUsers: arrayRemove(uidToUnblock)
+            });
             showAlert('تم إلغاء حظر المستخدم بنجاح.', 'success');
         } catch (error) {
             console.error("Error unblocking user: ", error);

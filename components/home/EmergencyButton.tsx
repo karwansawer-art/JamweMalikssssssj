@@ -9,10 +9,9 @@ import { TargetIcon } from '../ui/Icons.tsx';
 interface EmergencyButtonProps {
     user: User;
     userProfile: UserProfile;
-    setUserProfile: (profile: UserProfile) => void;
 }
 
-const EmergencyButton: React.FC<EmergencyButtonProps> = ({ user, userProfile, setUserProfile }) => {
+const EmergencyButton: React.FC<EmergencyButtonProps> = ({ user, userProfile }) => {
     const [modalOpen, setModalOpen] = useState(false);
     const [countdown, setCountdown] = useState(57);
     const [advice, setAdvice] = useState('');
@@ -68,12 +67,7 @@ const EmergencyButton: React.FC<EmergencyButtonProps> = ({ user, userProfile, se
             setAdvice(contentToShow);
             
             const nextIndex = currentIndex + 1;
-            if (user.isAnonymous) {
-                const updatedProfile = { ...userProfile, emergencyIndex: nextIndex };
-                setUserProfile(updatedProfile);
-            } else {
-                await updateDoc(doc(db, "users", user.uid), { emergencyIndex: nextIndex });
-            }
+            await updateDoc(doc(db, "users", user.uid), { emergencyIndex: nextIndex });
 
         } catch (e) {
             console.error("Error fetching advice or updating index:", e);

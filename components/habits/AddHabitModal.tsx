@@ -42,11 +42,9 @@ const CUSTOM_HABIT_ICONS = [
 interface AddHabitModalProps {
     onClose: () => void;
     user: User;
-    userProfile: UserProfile;
-    setUserProfile: (profile: UserProfile) => void;
 }
 
-const AddHabitModal: React.FC<AddHabitModalProps> = ({ onClose, user, userProfile, setUserProfile }) => {
+const AddHabitModal: React.FC<AddHabitModalProps> = ({ onClose, user }) => {
     const [name, setName] = useState('');
     const [icon, setIcon] = useState('');
     const [error, setError] = useState('');
@@ -73,24 +71,12 @@ const AddHabitModal: React.FC<AddHabitModalProps> = ({ onClose, user, userProfil
         setLoading(true);
 
         try {
-            if (user.isAnonymous) {
-                const newHabit: Habit = {
-                    id: Date.now().toString(),
-                    name,
-                    icon,
-                    createdAt: new Date(),
-                    logs: {}
-                };
-                const updatedHabits = [...(userProfile.habits || []), newHabit];
-                setUserProfile({ ...userProfile, habits: updatedHabits });
-            } else {
-                await addDoc(collection(db, 'users', user.uid, 'habits'), {
-                    name,
-                    icon,
-                    createdAt: serverTimestamp(),
-                    logs: {}
-                });
-            }
+            await addDoc(collection(db, 'users', user.uid, 'habits'), {
+                name,
+                icon,
+                createdAt: serverTimestamp(),
+                logs: {}
+            });
             onClose();
         } catch (err) {
             console.error("Error saving habit:", err);

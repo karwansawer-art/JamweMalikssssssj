@@ -2,18 +2,16 @@ import React, { useState } from 'react';
 import type { User } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase.ts';
-import type { Habit, UserProfile } from '../../types.ts';
+import type { Habit } from '../../types.ts';
 import { CloseIcon, ClockIcon, TrashIcon, Spinner } from '../ui/Icons.tsx';
 
 interface HabitReminderModalProps {
     onClose: () => void;
     habit: Habit;
     user: User;
-    userProfile: UserProfile;
-    setUserProfile: (profile: UserProfile) => void;
 }
 
-const HabitReminderModal: React.FC<HabitReminderModalProps> = ({ onClose, habit, user, userProfile, setUserProfile }) => {
+const HabitReminderModal: React.FC<HabitReminderModalProps> = ({ onClose, habit, user }) => {
     const [reminders, setReminders] = useState<string[]>(habit.reminders || []);
     const [newTime, setNewTime] = useState('09:00');
     const [loading, setLoading] = useState(false);
@@ -34,15 +32,8 @@ const HabitReminderModal: React.FC<HabitReminderModalProps> = ({ onClose, habit,
         setLoading(true);
         setError('');
         try {
-            if (user.isAnonymous) {
-                const updatedHabits = userProfile.habits?.map(h => 
-                    h.id === habit.id ? { ...h, reminders: reminders } : h
-                );
-                setUserProfile({ ...userProfile, habits: updatedHabits });
-            } else {
-                const habitRef = doc(db, 'users', user.uid, 'habits', habit.id);
-                await updateDoc(habitRef, { reminders: reminders });
-            }
+            const habitRef = doc(db, 'users', user.uid, 'habits', habit.id);
+            await updateDoc(habitRef, { reminders: reminders });
             onClose();
         } catch (err) {
             console.error("Error saving reminders:", err);

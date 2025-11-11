@@ -10,8 +10,6 @@ import HabitStatsModal from './HabitStatsModal.tsx';
 
 interface HabitsScreenProps {
     user: User;
-    userProfile: UserProfile;
-    setUserProfile: (profile: UserProfile) => void;
 }
 
 const getISODate = (date: Date): string => {
@@ -21,7 +19,7 @@ const getISODate = (date: Date): string => {
     return `${year}-${month}-${day}`;
 };
 
-const HabitsScreen: React.FC<HabitsScreenProps> = ({ user, userProfile, setUserProfile }) => {
+const HabitsScreen: React.FC<HabitsScreenProps> = ({ user }) => {
     const [habits, setHabits] = useState<Habit[]>([]);
     const [loading, setLoading] = useState(true);
     const [showAddModal, setShowAddModal] = useState(false);
@@ -30,27 +28,20 @@ const HabitsScreen: React.FC<HabitsScreenProps> = ({ user, userProfile, setUserP
     const lastCheckedTime = useRef<string | null>(null);
 
     useEffect(() => {
-        if (user.isAnonymous) {
-            const guestHabits = userProfile.habits || [];
-            const processedHabits = guestHabits.map(h => ({ ...h, createdAt: h.createdAt ? new Date(h.createdAt) : new Date() })).sort((a,b) => a.createdAt.getTime() - b.createdAt.getTime());
-            setHabits(processedHabits);
-            setLoading(false);
-        } else {
-            const q = query(collection(db, 'users', user.uid, 'habits'), orderBy('createdAt', 'asc'));
-            const unsubscribe = onSnapshot(q, (snapshot) => {
-                const fetchedHabits = snapshot.docs.map(doc => {
-                    const data = doc.data();
-                    return { id: doc.id, ...data, createdAt: (data.createdAt as any).toDate() } as Habit;
-                });
-                setHabits(fetchedHabits);
-                setLoading(false);
-            }, (error) => {
-                console.error("Error fetching habits:", error);
-                setLoading(false);
+        const q = query(collection(db, 'users', user.uid, 'habits'), orderBy('createdAt', 'asc'));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const fetchedHabits = snapshot.docs.map(doc => {
+                const data = doc.data();
+                return { id: doc.id, ...data, createdAt: (data.createdAt as any).toDate() } as Habit;
             });
-            return () => unsubscribe();
-        }
-    }, [user, userProfile]);
+            setHabits(fetchedHabits);
+            setLoading(false);
+        }, (error) => {
+            console.error("Error fetching habits:", error);
+            setLoading(false);
+        });
+        return () => unsubscribe();
+    }, [user]);
 
     // Request notification permission
     useEffect(() => {
@@ -94,12 +85,7 @@ const HabitsScreen: React.FC<HabitsScreenProps> = ({ user, userProfile, setUserP
     const confirmDeleteHabit = async () => {
         if (habitToDelete) {
             try {
-                if (user.isAnonymous) {
-                    const updatedHabits = (userProfile.habits || []).filter(h => h.id !== habitToDelete.id);
-                    setUserProfile({ ...userProfile, habits: updatedHabits });
-                } else {
-                    await deleteDoc(doc(db, 'users', user.uid, 'habits', habitToDelete.id));
-                }
+                await deleteDoc(doc(db, 'users', user.uid, 'habits', habitToDelete.id));
             } catch (error) {
                 console.error("Error deleting habit:", error);
             } finally {
@@ -111,25 +97,9 @@ const HabitsScreen: React.FC<HabitsScreenProps> = ({ user, userProfile, setUserP
     const handleToggleComplete = (habit: Habit) => {
         const todayKey = getISODate(new Date());
         const isCompleted = habit.logs?.[todayKey];
-        if (user.isAnonymous) {
-            const updatedHabits = habits.map(h => {
-                if (h.id === habit.id) {
-                    const newLogs = { ...h.logs };
-                    if (isCompleted) {
-                        delete newLogs[todayKey];
-                    } else {
-                        newLogs[todayKey] = true;
-                    }
-                    return { ...h, logs: newLogs };
-                }
-                return h;
-            });
-            setUserProfile({ ...userProfile, habits: updatedHabits });
-        } else {
-            const habitRef = doc(db, 'users', user.uid, 'habits', habit.id);
-            const newLogValue = isCompleted ? deleteField() : true;
-            updateDoc(habitRef, { [`logs.${todayKey}`]: newLogValue }).catch(console.error);
-        }
+        const habitRef = doc(db, 'users', user.uid, 'habits', habit.id);
+        const newLogValue = isCompleted ? deleteField() : true;
+        updateDoc(habitRef, { [`logs.${todayKey}`]: newLogValue }).catch(console.error);
     }
 
     return (
@@ -157,8 +127,6 @@ const HabitsScreen: React.FC<HabitsScreenProps> = ({ user, userProfile, setUserP
                             user={user} 
                             onDelete={() => setHabitToDelete(habit)}
                             onToggleComplete={() => handleToggleComplete(habit)}
-                            setUserProfile={setUserProfile}
-                            userProfile={userProfile}
                         />
                     ))
                 ) : (
@@ -169,7 +137,7 @@ const HabitsScreen: React.FC<HabitsScreenProps> = ({ user, userProfile, setUserP
                 )}
             </main>
             
-            {showAddModal && <AddHabitModal onClose={() => setShowAddModal(false)} user={user} userProfile={userProfile} setUserProfile={setUserProfile} />}
+            {showAddModal && <AddHabitModal onClose={() => setShowAddModal(false)} user={user} />}
             {showStatsModal && <HabitStatsModal onClose={() => setShowStatsModal(false)} habits={habits} />}
             
             {habitToDelete && (

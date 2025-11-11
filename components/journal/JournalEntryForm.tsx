@@ -45,10 +45,8 @@ interface JournalEntryFormProps {
     onClose: () => void;
     user: User;
     entryToEdit: JournalEntry | null;
-    userProfile: UserProfile;
-    setUserProfile: (profile: UserProfile) => void;
 }
-const JournalEntryForm: React.FC<JournalEntryFormProps> = ({ onClose, user, entryToEdit, userProfile, setUserProfile }) => {
+const JournalEntryForm: React.FC<JournalEntryFormProps> = ({ onClose, user, entryToEdit }) => {
     const [text, setText] = useState(entryToEdit?.text || '');
     const [mood, setMood] = useState(entryToEdit?.mood || '');
     const [error, setError] = useState('');
@@ -69,35 +67,13 @@ const JournalEntryForm: React.FC<JournalEntryFormProps> = ({ onClose, user, entr
         setLoading(true);
 
         try {
-            if (user.isAnonymous) {
-                const currentEntries = userProfile.journalEntries || [];
-                if (entryToEdit) {
-                    const updatedEntries = currentEntries.map(e => e.id === entryToEdit.id ? {...e, text, mood} : e);
-                     setUserProfile({
-                        ...userProfile,
-                        journalEntries: updatedEntries,
-                    });
-                } else {
-                    const newEntry: JournalEntry = {
-                        id: Date.now().toString(), // Simple unique ID for local
-                        text,
-                        mood,
-                        timestamp: new Date(),
-                    };
-                    setUserProfile({
-                        ...userProfile,
-                        journalEntries: [...currentEntries, newEntry],
-                    });
-                }
+            const journalCollection = collection(db, 'users', user.uid, 'journalEntries');
+            if (entryToEdit) {
+                await updateDoc(doc(journalCollection, entryToEdit.id), { text, mood });
             } else {
-                const journalCollection = collection(db, 'users', user.uid, 'journalEntries');
-                if (entryToEdit) {
-                    await updateDoc(doc(journalCollection, entryToEdit.id), { text, mood });
-                } else {
-                    await addDoc(journalCollection, {
-                        text, mood, timestamp: serverTimestamp()
-                    });
-                }
+                await addDoc(journalCollection, {
+                    text, mood, timestamp: serverTimestamp()
+                });
             }
             onClose();
         } catch (error) {

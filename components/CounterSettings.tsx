@@ -70,10 +70,9 @@ interface CounterSettingsProps {
     userProfile: UserProfile;
     setActiveTab: (tab: Tab) => void;
     isDeveloper: boolean;
-    setUserProfile: (profile: UserProfile) => void;
 }
 
-const CounterSettings: React.FC<CounterSettingsProps> = ({ user, userProfile, setActiveTab, isDeveloper, setUserProfile }) => {
+const CounterSettings: React.FC<CounterSettingsProps> = ({ user, userProfile, setActiveTab, isDeveloper }) => {
     const [showResetConfirm, setShowResetConfirm] = useState(false);
     const [showSetDateModal, setShowSetDateModal] = useState(false);
     const [showDeleteImageConfirm, setShowDeleteImageConfirm] = useState(false);
@@ -91,21 +90,13 @@ const CounterSettings: React.FC<CounterSettingsProps> = ({ user, userProfile, se
     const handleResetCounter = () => {
         setShowResetConfirm(false);
         const now = new Date();
-        if (user.isAnonymous) {
-            setUserProfile({ ...userProfile, startDate: now });
-        } else {
-            setDoc(doc(db, "users", user.uid), { startDate: now }, { merge: true });
-        }
+        setDoc(doc(db, "users", user.uid), { startDate: now }, { merge: true });
         clearBadgeHistory();
     };
 
     const handleSetStartDate = (date: string) => {
         const startDate = new Date(date);
-        if (user.isAnonymous) {
-            setUserProfile({ ...userProfile, startDate: startDate });
-        } else {
-            setDoc(doc(db, "users", user.uid), { startDate }, { merge: true });
-        }
+        setDoc(doc(db, "users", user.uid), { startDate }, { merge: true });
         clearBadgeHistory();
         setShowSetDateModal(false);
     };

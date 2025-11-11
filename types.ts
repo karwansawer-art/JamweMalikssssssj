@@ -21,7 +21,6 @@ export interface UserProfile {
   journalEntries?: JournalEntry[];
   habits?: Habit[];
   followUpLogs?: { [key: string]: FollowUpLog };
-  communityPostFireReactions?: Set<string>; // Added for guest users to track their reactions
 }
 
 export interface Message {

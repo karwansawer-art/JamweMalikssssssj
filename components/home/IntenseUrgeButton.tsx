@@ -9,10 +9,9 @@ import { LightningBoltIcon } from '../ui/Icons.tsx';
 interface IntenseUrgeButtonProps {
     user: User;
     userProfile: UserProfile;
-    setUserProfile: (profile: UserProfile) => void;
 }
 
-const IntenseUrgeButton: React.FC<IntenseUrgeButtonProps> = ({ user, userProfile, setUserProfile }) => {
+const IntenseUrgeButton: React.FC<IntenseUrgeButtonProps> = ({ user, userProfile }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [response, setResponse] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -50,12 +49,7 @@ const IntenseUrgeButton: React.FC<IntenseUrgeButtonProps> = ({ user, userProfile
             setResponse(contentToShow);
             
             const nextIndex = currentIndex + 1;
-            if (user.isAnonymous) {
-                const updatedProfile = { ...userProfile, urgeIndex: nextIndex };
-                setUserProfile(updatedProfile);
-            } else {
-                await updateDoc(doc(db, "users", user.uid), { urgeIndex: nextIndex });
-            }
+            await updateDoc(doc(db, "users", user.uid), { urgeIndex: nextIndex });
         } catch (e) {
             console.error("Error fetching solution or updating index:", e);
             setError("هەڵەیەک ڕوویدا لە وەرگرتنی چارەسەر.");

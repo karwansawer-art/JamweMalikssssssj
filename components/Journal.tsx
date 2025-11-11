@@ -26,10 +26,9 @@ const formatTimeAgo = (date: Date): string => {
 interface JournalProps {
     user: User;
     userProfile: UserProfile;
-    setUserProfile: (profile: UserProfile) => void;
 }
 
-const Journal: React.FC<JournalProps> = ({ user, userProfile, setUserProfile }) => {
+const Journal: React.FC<JournalProps> = ({ user, userProfile }) => {
     const [entries, setEntries] = useState<JournalEntry[]>([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
@@ -38,40 +37,25 @@ const Journal: React.FC<JournalProps> = ({ user, userProfile, setUserProfile }) 
     const [showDeleteConfirm, setShowDeleteConfirm] = useState<JournalEntry | null>(null);
 
     useEffect(() => {
-        if (user.isAnonymous) {
-            const guestEntries = userProfile.journalEntries || [];
-            const processedEntries = guestEntries.map(e => ({ ...e, timestamp: e.timestamp ? new Date(e.timestamp) : new Date() })).sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime());
-            setEntries(processedEntries);
-            setLoading(false);
-        } else {
-            const q = query(collection(db, 'users', user.uid, 'journalEntries'), orderBy('timestamp', 'desc'));
-            const unsubscribe = onSnapshot(q, (snapshot) => {
-                const fetchedEntries = snapshot.docs.map(doc => {
-                    const data = doc.data();
-                    return { id: doc.id, ...data, timestamp: (data.timestamp as any).toDate() } as JournalEntry;
-                });
-                setEntries(fetchedEntries);
-                setLoading(false);
-            }, (error) => {
-                console.error("Error fetching journal entries:", error);
-                setLoading(false);
+        const q = query(collection(db, 'users', user.uid, 'journalEntries'), orderBy('timestamp', 'desc'));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const fetchedEntries = snapshot.docs.map(doc => {
+                const data = doc.data();
+                return { id: doc.id, ...data, timestamp: (data.timestamp as any).toDate() } as JournalEntry;
             });
-            return () => unsubscribe();
-        }
-    }, [user, userProfile]);
+            setEntries(fetchedEntries);
+            setLoading(false);
+        }, (error) => {
+            console.error("Error fetching journal entries:", error);
+            setLoading(false);
+        });
+        return () => unsubscribe();
+    }, [user]);
 
     const handleDelete = async () => {
         if (showDeleteConfirm) {
             try {
-                if (user.isAnonymous) {
-                    const updatedEntries = (userProfile.journalEntries || []).filter(e => e.id !== showDeleteConfirm.id);
-                    setUserProfile({
-                        ...userProfile,
-                        journalEntries: updatedEntries,
-                    });
-                } else {
-                    await deleteDoc(doc(db, 'users', user.uid, 'journalEntries', showDeleteConfirm.id));
-                }
+                await deleteDoc(doc(db, 'users', user.uid, 'journalEntries', showDeleteConfirm.id));
                 setShowDeleteConfirm(null);
                 setExpandedEntryId(null);
             } catch (error) {
@@ -148,7 +132,7 @@ const Journal: React.FC<JournalProps> = ({ user, userProfile, setUserProfile }) 
                 )}
             </main>
 
-            {showForm && <JournalEntryForm onClose={() => setShowForm(false)} user={user} entryToEdit={entryToEdit} userProfile={userProfile} setUserProfile={setUserProfile} />}
+            {showForm && <JournalEntryForm onClose={() => setShowForm(false)} user={user} entryToEdit={entryToEdit} />}
             
             {showDeleteConfirm && (
                 <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[60] p-4">
