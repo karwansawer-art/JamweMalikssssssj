@@ -1,5 +1,6 @@
-const CACHE_NAME = 'recovery-app-v1';
-const STATIC_CACHE_NAME = 'recovery-app-static-v1';
+// FOR FUTURE UPDATES: Change the version number in CACHE_NAME and STATIC_CACHE_NAME to trigger an update.
+const CACHE_NAME = 'recovery-app-v2';
+const STATIC_CACHE_NAME = 'recovery-app-static-v2';
 
 const urlsToCacheOnInstall = [
   './',
@@ -21,6 +22,7 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (!currentCaches.includes(cacheName)) {
+            console.log('Service Worker: Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
