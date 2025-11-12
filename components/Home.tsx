@@ -7,7 +7,7 @@ import { db } from '../services/firebase.ts';
 import { doc, setDoc, onSnapshot, collection, query, orderBy } from 'firebase/firestore';
 import { getPlural, getTimeDifference } from '../utils/time.ts';
 
-import { SettingsIcon, ChatIcon, BellIcon, UserIcon as ProfileIcon, CounterIcon, LeaderboardIcon, MedalIcon, QuoteIcon, TelegramIcon, SparklesIcon } from './ui/Icons.tsx';
+import { SettingsIcon, ChatIcon, BellIcon, UserIcon as ProfileIcon, CounterIcon, LeaderboardIcon, MedalIcon, QuoteIcon, TelegramIcon, SparklesIcon, BrainCircuitIcon } from './ui/Icons.tsx';
 import EmergencyButton from './home/EmergencyButton.tsx';
 import IntenseUrgeButton from './home/IntenseUrgeButton.tsx';
 import FaithDoseButton from './home/FaithDoseButton.tsx';
@@ -15,6 +15,7 @@ import CommitmentDocument from './home/CommitmentDocument.tsx';
 import ProgressBar from './ui/ProgressBar.tsx';
 import FreedomModelProgram from './home/FreedomModelProgram.tsx'; // Import the new component
 import RecoveryCompanionModal from './modals/RecoveryCompanionModal.tsx';
+import HomosexualityRecoveryModal from './modals/HomosexualityRecoveryModal.tsx';
 
 const quotes = [
     {
@@ -80,6 +81,7 @@ const Home: React.FC<HomeProps> = ({
     const [now, setNow] = useState(() => new Date());
     const [showFreedomModelProgram, setShowFreedomModelProgram] = useState(false); // New state for the Freedom Model Program
     const [showRecoveryCompanionModal, setShowRecoveryCompanionModal] = useState(false);
+    const [showHomosexualityRecoveryModal, setShowHomosexualityRecoveryModal] = useState(false);
 
     const [globalQuotes, setGlobalQuotes] = useState<{ quote: string; author?: string; }[]>(() => {
         try {
@@ -208,6 +210,22 @@ const Home: React.FC<HomeProps> = ({
         </button>
     );
 
+    const homosexualityRecoveryButton = (
+        <button
+            onClick={() => setShowHomosexualityRecoveryModal(true)}
+            className="group w-full p-4 rounded-xl text-white flex items-center justify-between bg-sky-950/50 backdrop-blur-sm border border-sky-700/40 transition-all duration-300 hover:bg-sky-900/70 hover:border-sky-600"
+            aria-label="التعافي من الشذوذ الجنسية"
+        >
+            <div className="text-right">
+                <h3 className="text-lg font-bold text-teal-300">التعافي من الشذوذ الجنسية</h3>
+                <p className="text-sm text-sky-400">مساعدك للتغلب على الميول المثلية</p>
+            </div>
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shadow-lg group-hover:shadow-teal-500/30 transition-shadow">
+                <BrainCircuitIcon className="w-8 h-8" />
+            </div>
+        </button>
+    );
+
     if (!startDate) {
       return (
           <div className="text-white">
@@ -256,6 +274,7 @@ const Home: React.FC<HomeProps> = ({
               </button>
               <div className="mt-8 flex flex-col gap-4 pb-20">
                 {recoveryCompanionButton}
+                {homosexualityRecoveryButton}
                 <IntenseUrgeButton user={user} userProfile={userProfile} />
                 <EmergencyButton user={user} userProfile={userProfile} />
                 <CommitmentDocument user={user} userProfile={userProfile} />
@@ -271,6 +290,7 @@ const Home: React.FC<HomeProps> = ({
                 />
             )}
             {showRecoveryCompanionModal && <RecoveryCompanionModal isOpen={showRecoveryCompanionModal} onClose={() => setShowRecoveryCompanionModal(false)} />}
+            {showHomosexualityRecoveryModal && <HomosexualityRecoveryModal isOpen={showHomosexualityRecoveryModal} onClose={() => setShowHomosexualityRecoveryModal(false)} />}
           </div>
       );
     }
@@ -322,6 +342,7 @@ const Home: React.FC<HomeProps> = ({
                 </button>
                 <div className="mt-8 flex flex-col gap-4 pb-20">
                     {recoveryCompanionButton}
+                    {homosexualityRecoveryButton}
                     <IntenseUrgeButton user={user} userProfile={userProfile} />
                     <EmergencyButton user={user} userProfile={userProfile} />
                     <CommitmentDocument user={user} userProfile={userProfile} />
@@ -337,6 +358,7 @@ const Home: React.FC<HomeProps> = ({
                 />
             )}
             {showRecoveryCompanionModal && <RecoveryCompanionModal isOpen={showRecoveryCompanionModal} onClose={() => setShowRecoveryCompanionModal(false)} />}
+            {showHomosexualityRecoveryModal && <HomosexualityRecoveryModal isOpen={showHomosexualityRecoveryModal} onClose={() => setShowHomosexualityRecoveryModal(false)} />}
         </div>
     );
 };

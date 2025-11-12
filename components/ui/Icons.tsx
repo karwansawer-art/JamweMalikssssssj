@@ -449,3 +449,27 @@ export const ScrollTextIcon: React.FC<{ className?: string }> = ({ className }) 
     <path d="M15 12h-5"/>
   </svg>
 );
+
+export const BrainCircuitIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 5a3 3 0 1 0-5.993.296"/>
+        <path d="M12 5a3 3 0 1 0 5.993.296"/>
+        <path d="M15 13a3 3 0 1 0-5.993.296"/>
+        <path d="M15 13a3 3 0 1 0 5.993.296"/>
+        <path d="M9 13a3 3 0 1 0-5.993.296"/>
+        <path d="M9.003 12.704A3 3 0 1 0 12 15"/>
+        <path d="M14.997 12.704A3 3 0 1 0 12 15"/>
+        <path d="M6 15a3 3 0 1 0 5.993.296"/>
+        <path d="M18 15a3 3 0 1 0-5.993.296"/>
+        <path d="M12 5a3 3 0 1 1-5.993-.296"/>
+        <path d="M12 5a3 3 0 1 1 5.993-.296"/>
+        <path d="M12.003 4.704A3 3 0 1 0 15 7"/>
+        <path d="M8.997 4.704A3 3 0 1 0 12 7"/>
+        <path d="M6.089 7.31a3 3 0 1 0 2.818 2.915"/>
+        <path d="M17.911 7.31a3 3 0 1 1-2.818 2.915"/>
+        <path d="M6.089 16.69a3 3 0 1 1 2.818-2.915"/>
+        <path d="M17.911 16.69a3 3 0 1 0-2.818-2.915"/>
+        <path d="M12 21a8 8 0 1 0-8-8"/>
+        <path d="M12 21a8 8 0 1 1 8-8"/>
+    </svg>
+);
