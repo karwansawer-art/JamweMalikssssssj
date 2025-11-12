@@ -30,6 +30,35 @@ const App: React.FC = () => {
           if (docSnap.exists()) {
             const data = docSnap.data();
 
+            let finalStartDate: Date | undefined = (data.startDate as Timestamp)?.toDate();
+
+            // If Firestore data is missing startDate, check localStorage as a fallback.
+            if (!finalStartDate) {
+                try {
+                    const cachedStartDate = localStorage.getItem(`user_startDate_${user.uid}`);
+                    if (cachedStartDate) {
+                        const cachedDate = new Date(cachedStartDate);
+                        // Check if the cached date is valid before using it
+                        if (!isNaN(cachedDate.getTime())) {
+                            console.warn("Using cached startDate as a fallback due to missing Firestore data.");
+                            finalStartDate = cachedDate;
+                        }
+                    }
+                } catch (e) {
+                    console.error("Failed to read startDate from localStorage", e);
+                }
+            }
+
+            // If we have a valid startDate (either from Firestore or cache),
+            // update the cache to ensure it's always the latest known value.
+            if (finalStartDate) {
+                try {
+                    localStorage.setItem(`user_startDate_${user.uid}`, finalStartDate.toISOString());
+                } catch (e) {
+                    console.error("Failed to write startDate to localStorage", e);
+                }
+            }
+
             // Auto-assign an avatar if one doesn't exist for a signed-in user
             if (!data.photoURL) {
                 // Assign a default avatar deterministically based on UID
@@ -54,7 +83,7 @@ const App: React.FC = () => {
               email: data.email,
               photoURL: data.photoURL,
               createdAt: (data.createdAt as Timestamp)?.toDate() || new Date(), // Convert Timestamp to Date
-              startDate: (data.startDate as Timestamp)?.toDate() || undefined, // Convert Timestamp to Date or keep undefined
+              startDate: finalStartDate, // Use the potentially cached value
               isAdmin: data.isAdmin ?? false,
               isMuted: data.isMuted ?? false,
               role: data.role ?? undefined,
