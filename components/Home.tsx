@@ -7,7 +7,7 @@ import { db } from '../services/firebase.ts';
 import { doc, setDoc, onSnapshot, collection, query, orderBy } from 'firebase/firestore';
 import { getPlural, getTimeDifference } from '../utils/time.ts';
 
-import { SettingsIcon, ChatIcon, BellIcon, UserIcon as ProfileIcon, CounterIcon, LeaderboardIcon, MedalIcon, QuoteIcon, TelegramIcon, SparklesIcon, BrainCircuitIcon } from './ui/Icons.tsx';
+import { SettingsIcon, ChatIcon, BellIcon, UserIcon as ProfileIcon, CounterIcon, LeaderboardIcon, MedalIcon, QuoteIcon, TelegramIcon, SparklesIcon, BrainCircuitIcon, VideoLibraryIcon, CloseIcon } from './ui/Icons.tsx';
 import EmergencyButton from './home/EmergencyButton.tsx';
 import IntenseUrgeButton from './home/IntenseUrgeButton.tsx';
 import FaithDoseButton from './home/FaithDoseButton.tsx';
@@ -57,6 +57,45 @@ const quotes = [
     }
 ];
 
+interface RecoveryVideosModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+}
+
+const RecoveryVideosModal: React.FC<RecoveryVideosModalProps> = ({ isOpen, onClose }) => {
+    if (!isOpen) return null;
+
+    const recoveryUrl = "https://videoupload-vkzzyzmm.manus.space/";
+
+    return (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[60] p-4" onClick={onClose}>
+            <div 
+                className="w-full max-w-md h-[90vh] bg-sky-950 border border-blue-700/50 rounded-2xl shadow-2xl p-0 flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <header className="flex-shrink-0 flex justify-between items-center p-4 border-b border-blue-700/50">
+                    <div className="flex items-center gap-3">
+                        <VideoLibraryIcon className="w-6 h-6 text-blue-300" />
+                        <h3 className="text-xl font-bold text-blue-300">فيديوهات التعافي</h3>
+                    </div>
+                    <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10 text-sky-300 hover:text-white">
+                        <CloseIcon className="w-6 h-6" />
+                    </button>
+                </header>
+                
+                <main className="flex-grow overflow-hidden rounded-b-2xl">
+                    <iframe
+                        src={recoveryUrl}
+                        title="فيديوهات التعافي"
+                        className="w-full h-full border-0"
+                    ></iframe>
+                </main>
+            </div>
+        </div>
+    );
+};
+
+
 interface HomeProps {
   user: User;
   userProfile: UserProfile;
@@ -82,6 +121,7 @@ const Home: React.FC<HomeProps> = ({
     const [showFreedomModelProgram, setShowFreedomModelProgram] = useState(false); // New state for the Freedom Model Program
     const [showRecoveryCompanionModal, setShowRecoveryCompanionModal] = useState(false);
     const [showHomosexualityRecoveryModal, setShowHomosexualityRecoveryModal] = useState(false);
+    const [showRecoveryVideosModal, setShowRecoveryVideosModal] = useState(false);
 
     const [globalQuotes, setGlobalQuotes] = useState<{ quote: string; author?: string; }[]>(() => {
         try {
@@ -226,6 +266,22 @@ const Home: React.FC<HomeProps> = ({
         </button>
     );
 
+    const recoveryVideosButton = (
+        <button
+            onClick={() => setShowRecoveryVideosModal(true)}
+            className="group w-full p-4 rounded-xl text-white flex items-center justify-between bg-sky-950/50 backdrop-blur-sm border border-sky-700/40 transition-all duration-300 hover:bg-sky-900/70 hover:border-sky-600"
+            aria-label="فيديوهات التعافي"
+        >
+            <div className="text-right">
+                <h3 className="text-lg font-bold text-blue-300">فيديوهات التعافي</h3>
+                <p className="text-sm text-sky-400">مكتبة مرئية لدعم رحلتك</p>
+            </div>
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg group-hover:shadow-blue-500/30 transition-shadow">
+                <VideoLibraryIcon className="w-8 h-8" />
+            </div>
+        </button>
+    );
+
     if (!startDate) {
       return (
           <div className="text-white">
@@ -275,6 +331,7 @@ const Home: React.FC<HomeProps> = ({
               <div className="mt-8 flex flex-col gap-4 pb-20">
                 {recoveryCompanionButton}
                 {homosexualityRecoveryButton}
+                {recoveryVideosButton}
                 <IntenseUrgeButton user={user} userProfile={userProfile} />
                 <EmergencyButton user={user} userProfile={userProfile} />
                 <CommitmentDocument user={user} userProfile={userProfile} />
@@ -291,6 +348,7 @@ const Home: React.FC<HomeProps> = ({
             )}
             {showRecoveryCompanionModal && <RecoveryCompanionModal isOpen={showRecoveryCompanionModal} onClose={() => setShowRecoveryCompanionModal(false)} />}
             {showHomosexualityRecoveryModal && <HomosexualityRecoveryModal isOpen={showHomosexualityRecoveryModal} onClose={() => setShowHomosexualityRecoveryModal(false)} />}
+            {showRecoveryVideosModal && <RecoveryVideosModal isOpen={showRecoveryVideosModal} onClose={() => setShowRecoveryVideosModal(false)} />}
           </div>
       );
     }
@@ -343,6 +401,7 @@ const Home: React.FC<HomeProps> = ({
                 <div className="mt-8 flex flex-col gap-4 pb-20">
                     {recoveryCompanionButton}
                     {homosexualityRecoveryButton}
+                    {recoveryVideosButton}
                     <IntenseUrgeButton user={user} userProfile={userProfile} />
                     <EmergencyButton user={user} userProfile={userProfile} />
                     <CommitmentDocument user={user} userProfile={userProfile} />
@@ -359,6 +418,7 @@ const Home: React.FC<HomeProps> = ({
             )}
             {showRecoveryCompanionModal && <RecoveryCompanionModal isOpen={showRecoveryCompanionModal} onClose={() => setShowRecoveryCompanionModal(false)} />}
             {showHomosexualityRecoveryModal && <HomosexualityRecoveryModal isOpen={showHomosexualityRecoveryModal} onClose={() => setShowHomosexualityRecoveryModal(false)} />}
+            {showRecoveryVideosModal && <RecoveryVideosModal isOpen={showRecoveryVideosModal} onClose={() => setShowRecoveryVideosModal(false)} />}
         </div>
     );
 };
