@@ -7,7 +7,7 @@ import { db } from '../services/firebase.ts';
 import { doc, setDoc, onSnapshot, collection, query, orderBy } from 'firebase/firestore';
 import { getPlural, getTimeDifference } from '../utils/time.ts';
 
-import { SettingsIcon, ChatIcon, BellIcon, UserIcon as ProfileIcon, CounterIcon, LeaderboardIcon, MedalIcon, QuoteIcon, TelegramIcon, SparklesIcon, BrainCircuitIcon, VideoLibraryIcon, CloseIcon } from './ui/Icons.tsx';
+import { SettingsIcon, ChatIcon, BellIcon, UserIcon as ProfileIcon, CounterIcon, LeaderboardIcon, MedalIcon, QuoteIcon, TelegramIcon, SparklesIcon, DoctorIcon, VideoLibraryIcon, CloseIcon } from './ui/Icons.tsx';
 import EmergencyButton from './home/EmergencyButton.tsx';
 import IntenseUrgeButton from './home/IntenseUrgeButton.tsx';
 import FaithDoseButton from './home/FaithDoseButton.tsx';
@@ -15,7 +15,7 @@ import CommitmentDocument from './home/CommitmentDocument.tsx';
 import ProgressBar from './ui/ProgressBar.tsx';
 import FreedomModelProgram from './home/FreedomModelProgram.tsx'; // Import the new component
 import RecoveryCompanionModal from './modals/RecoveryCompanionModal.tsx';
-import HomosexualityRecoveryModal from './modals/HomosexualityRecoveryModal.tsx';
+import DoctorTaafiModal from './modals/DoctorTaafiModal.tsx';
 
 const quotes = [
     {
@@ -120,7 +120,7 @@ const Home: React.FC<HomeProps> = ({
     const [now, setNow] = useState(() => new Date());
     const [showFreedomModelProgram, setShowFreedomModelProgram] = useState(false); // New state for the Freedom Model Program
     const [showRecoveryCompanionModal, setShowRecoveryCompanionModal] = useState(false);
-    const [showHomosexualityRecoveryModal, setShowHomosexualityRecoveryModal] = useState(false);
+    const [showDoctorTaafiModal, setShowDoctorTaafiModal] = useState(false);
     const [showRecoveryVideosModal, setShowRecoveryVideosModal] = useState(false);
 
     const [globalQuotes, setGlobalQuotes] = useState<{ quote: string; author?: string; }[]>(() => {
@@ -234,6 +234,22 @@ const Home: React.FC<HomeProps> = ({
         </div>
     );
     
+    const doctorTaafiButton = (
+        <button
+            onClick={() => setShowDoctorTaafiModal(true)}
+            className="group w-full p-4 rounded-xl text-white flex items-center justify-between bg-sky-950/50 backdrop-blur-sm border border-sky-700/40 transition-all duration-300 hover:bg-sky-900/70 hover:border-sky-600"
+            aria-label="دکتور التعافي"
+        >
+            <div className="text-right">
+                <h3 className="text-lg font-bold text-cyan-300">دکتور التعافي</h3>
+                <p className="text-sm text-sky-400">رفيقك الذكي في التعافي</p>
+            </div>
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg group-hover:shadow-cyan-500/30 transition-shadow">
+                <DoctorIcon className="w-8 h-8" />
+            </div>
+        </button>
+    );
+
     const recoveryCompanionButton = (
         <button
             onClick={() => setShowRecoveryCompanionModal(true)}
@@ -246,22 +262,6 @@ const Home: React.FC<HomeProps> = ({
             </div>
             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center shadow-lg group-hover:shadow-purple-500/30 transition-shadow">
                 <SparklesIcon className="w-8 h-8" />
-            </div>
-        </button>
-    );
-
-    const homosexualityRecoveryButton = (
-        <button
-            onClick={() => setShowHomosexualityRecoveryModal(true)}
-            className="group w-full p-4 rounded-xl text-white flex items-center justify-between bg-sky-950/50 backdrop-blur-sm border border-sky-700/40 transition-all duration-300 hover:bg-sky-900/70 hover:border-sky-600"
-            aria-label="التعافي من الشذوذ الجنسية"
-        >
-            <div className="text-right">
-                <h3 className="text-lg font-bold text-teal-300">التعافي من الشذوذ الجنسية</h3>
-                <p className="text-sm text-sky-400">مساعدك للتغلب على الميول المثلية</p>
-            </div>
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shadow-lg group-hover:shadow-teal-500/30 transition-shadow">
-                <BrainCircuitIcon className="w-8 h-8" />
             </div>
         </button>
     );
@@ -329,8 +329,8 @@ const Home: React.FC<HomeProps> = ({
                   <p className="text-sm text-sky-400">نموذج الحرية – كيف تتخلص من الإباحية والعادة السرية؟</p>
               </button>
               <div className="mt-8 flex flex-col gap-4 pb-20">
+                {doctorTaafiButton}
                 {recoveryCompanionButton}
-                {homosexualityRecoveryButton}
                 {recoveryVideosButton}
                 <IntenseUrgeButton user={user} userProfile={userProfile} />
                 <EmergencyButton user={user} userProfile={userProfile} />
@@ -347,7 +347,7 @@ const Home: React.FC<HomeProps> = ({
                 />
             )}
             {showRecoveryCompanionModal && <RecoveryCompanionModal isOpen={showRecoveryCompanionModal} onClose={() => setShowRecoveryCompanionModal(false)} />}
-            {showHomosexualityRecoveryModal && <HomosexualityRecoveryModal isOpen={showHomosexualityRecoveryModal} onClose={() => setShowHomosexualityRecoveryModal(false)} />}
+            {showDoctorTaafiModal && <DoctorTaafiModal isOpen={showDoctorTaafiModal} onClose={() => setShowDoctorTaafiModal(false)} />}
             {showRecoveryVideosModal && <RecoveryVideosModal isOpen={showRecoveryVideosModal} onClose={() => setShowRecoveryVideosModal(false)} />}
           </div>
       );
@@ -399,8 +399,8 @@ const Home: React.FC<HomeProps> = ({
                     <p className="text-sm text-sky-400">نموذج الحرية – كيف تتخلص من الإباحية والعادة السرية؟</p>
                 </button>
                 <div className="mt-8 flex flex-col gap-4 pb-20">
+                    {doctorTaafiButton}
                     {recoveryCompanionButton}
-                    {homosexualityRecoveryButton}
                     {recoveryVideosButton}
                     <IntenseUrgeButton user={user} userProfile={userProfile} />
                     <EmergencyButton user={user} userProfile={userProfile} />
@@ -417,7 +417,7 @@ const Home: React.FC<HomeProps> = ({
                 />
             )}
             {showRecoveryCompanionModal && <RecoveryCompanionModal isOpen={showRecoveryCompanionModal} onClose={() => setShowRecoveryCompanionModal(false)} />}
-            {showHomosexualityRecoveryModal && <HomosexualityRecoveryModal isOpen={showHomosexualityRecoveryModal} onClose={() => setShowHomosexualityRecoveryModal(false)} />}
+            {showDoctorTaafiModal && <DoctorTaafiModal isOpen={showDoctorTaafiModal} onClose={() => setShowDoctorTaafiModal(false)} />}
             {showRecoveryVideosModal && <RecoveryVideosModal isOpen={showRecoveryVideosModal} onClose={() => setShowRecoveryVideosModal(false)} />}
         </div>
     );
