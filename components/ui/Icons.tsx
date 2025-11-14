@@ -432,13 +432,23 @@ export const SparklesIcon: React.FC<{ className?: string }> = ({ className }) =>
   </svg>
 );
 
-export const CompanionIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 7.5V6.75a2.25 2.25 0 012.25-2.25h3a2.25 2.25 0 012.25 2.25V7.5" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 9.75h6.375a2.625 2.625 0 012.625 2.625v3.75a2.625 2.625 0 01-2.625 2.625H9.375a2.625 2.625 0 01-2.625-2.625v-3.75a2.625 2.625 0 012.625-2.625H9z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 13.5h.008v.008h-.008v-.008zm3 0h.008v.008h-.008v-.008z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 18v2.25a1.5 1.5 0 001.5 1.5h3a1.5 1.5 0 001.5-1.5V18" />
-  </svg>
+export const FriendsIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+);
+
+export const DoctorIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H11a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+        <path d="M15 12.5v-1a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v1"/>
+        <path d="M12 12.5v3"/>
+        <circle cx="12" cy="16.5" r="1.5"/>
+    </svg>
 );
 
 export const ScrollTextIcon: React.FC<{ className?: string }> = ({ className }) => (

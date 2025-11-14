@@ -5,7 +5,6 @@ import { db } from '../services/firebase.ts';
 import type { FollowUpLog as IFollowUpLog, FollowUpStatus, UserProfile } from '../types.ts';
 import { Spinner, PlusIcon, SparklesIcon } from './ui/Icons.tsx';
 import { callGeminiAPI } from '../services/apiKeyManager.ts';
-import RecoveryQAModal from './modals/RecoveryQAModal.tsx';
 
 // --- گۆڕانکاری لێرەدایە: زیادکردنی ٢ مدربی نوێ ---
 export type AnalyticalPersona = 
@@ -341,7 +340,6 @@ const FollowUpScreen: React.FC<FollowUpScreenProps> = ({ user, userProfile }) =>
     const [showSlipUpWarning, setShowSlipUpWarning] = useState(false);
     const [showSlipUpConfirm, setShowSlipUpConfirm] = useState(false);
     const [showCoachModal, setShowCoachModal] = useState(false);
-    const [showRecoveryQAModal, setShowRecoveryQAModal] = useState(false);
     const backfillAttempted = useRef(false);
 
     useEffect(() => {
@@ -597,14 +595,7 @@ const FollowUpScreen: React.FC<FollowUpScreenProps> = ({ user, userProfile }) =>
                 />
             )}
             
-            {showRecoveryQAModal && (
-                <RecoveryQAModal 
-                    isOpen={showRecoveryQAModal}
-                    onClose={() => setShowRecoveryQAModal(false)}
-                    userProfile={userProfile}
-                />
-            )}
-
+            
 
             {showLogModal && (
                 <div 
@@ -668,14 +659,6 @@ const FollowUpScreen: React.FC<FollowUpScreenProps> = ({ user, userProfile }) =>
                 aria-label="تحليل المدرب"
             >
                 <CoachIcon className="w-8 h-8" />
-            </button>
-             {/* --- دوگمەی "سؤال في التعافي" --- */}
-            <button
-                onClick={() => setShowRecoveryQAModal(true)}
-                className="fixed z-40 right-6 bottom-40 w-16 h-16 rounded-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-cyan-600 text-white shadow-lg hover:scale-110 transition-transform duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-sky-950/50 focus:ring-blue-400"
-                aria-label="سؤال في التعافي"
-            >
-                <SparklesIcon className="w-8 h-8" />
             </button>
         </div>
     );
