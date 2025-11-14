@@ -7,7 +7,7 @@ import { db } from '../services/firebase.ts';
 import { doc, setDoc, onSnapshot, collection, query, orderBy } from 'firebase/firestore';
 import { getPlural, getTimeDifference } from '../utils/time.ts';
 
-import { SettingsIcon, ChatIcon, BellIcon, UserIcon as ProfileIcon, CounterIcon, LeaderboardIcon, MedalIcon, QuoteIcon, TelegramIcon, VideoLibraryIcon, CloseIcon, FriendsIcon } from './ui/Icons.tsx';
+import { SettingsIcon, ChatIcon, BellIcon, UserIcon as ProfileIcon, CounterIcon, LeaderboardIcon, MedalIcon, QuoteIcon, TelegramIcon, SparklesIcon, BrainCircuitIcon, VideoLibraryIcon, CloseIcon } from './ui/Icons.tsx';
 import EmergencyButton from './home/EmergencyButton.tsx';
 import IntenseUrgeButton from './home/IntenseUrgeButton.tsx';
 import FaithDoseButton from './home/FaithDoseButton.tsx';
@@ -15,7 +15,7 @@ import CommitmentDocument from './home/CommitmentDocument.tsx';
 import ProgressBar from './ui/ProgressBar.tsx';
 import FreedomModelProgram from './home/FreedomModelProgram.tsx'; // Import the new component
 import RecoveryCompanionModal from './modals/RecoveryCompanionModal.tsx';
-import DrTaafiModal from './modals/HomosexualityRecoveryModal.tsx';
+import HomosexualityRecoveryModal from './modals/HomosexualityRecoveryModal.tsx';
 
 const quotes = [
     {
@@ -120,7 +120,7 @@ const Home: React.FC<HomeProps> = ({
     const [now, setNow] = useState(() => new Date());
     const [showFreedomModelProgram, setShowFreedomModelProgram] = useState(false); // New state for the Freedom Model Program
     const [showRecoveryCompanionModal, setShowRecoveryCompanionModal] = useState(false);
-    const [showDrTaafiModal, setShowDrTaafiModal] = useState(false);
+    const [showHomosexualityRecoveryModal, setShowHomosexualityRecoveryModal] = useState(false);
     const [showRecoveryVideosModal, setShowRecoveryVideosModal] = useState(false);
 
     const [globalQuotes, setGlobalQuotes] = useState<{ quote: string; author?: string; }[]>(() => {
@@ -245,23 +245,23 @@ const Home: React.FC<HomeProps> = ({
                 <p className="text-sm text-sky-400">رفيقك الذكي للإجابة على جميع تساؤلاتك</p>
             </div>
             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center shadow-lg group-hover:shadow-purple-500/30 transition-shadow">
-                <FriendsIcon className="w-8 h-8" />
+                <SparklesIcon className="w-8 h-8" />
             </div>
         </button>
     );
 
-    const drTaafiButton = (
+    const homosexualityRecoveryButton = (
         <button
-            onClick={() => setShowDrTaafiModal(true)}
+            onClick={() => setShowHomosexualityRecoveryModal(true)}
             className="group w-full p-4 rounded-xl text-white flex items-center justify-between bg-sky-950/50 backdrop-blur-sm border border-sky-700/40 transition-all duration-300 hover:bg-sky-900/70 hover:border-sky-600"
-            aria-label="دكتور التعافي"
+            aria-label="التعافي من الشذوذ الجنسية"
         >
             <div className="text-right">
-                <h3 className="text-lg font-bold text-cyan-300">دكتور التعافي</h3>
-                <p className="text-sm text-sky-400">رفيقك في رحلة التعافي</p>
+                <h3 className="text-lg font-bold text-teal-300">التعافي من الشذوذ الجنسية</h3>
+                <p className="text-sm text-sky-400">مساعدك للتغلب على الميول المثلية</p>
             </div>
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg group-hover:shadow-blue-500/30 transition-shadow">
-                <span className="text-3xl" role="img" aria-label="دكتور">👨‍⚕️</span>
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shadow-lg group-hover:shadow-teal-500/30 transition-shadow">
+                <BrainCircuitIcon className="w-8 h-8" />
             </div>
         </button>
     );
@@ -329,8 +329,8 @@ const Home: React.FC<HomeProps> = ({
                   <p className="text-sm text-sky-400">نموذج الحرية – كيف تتخلص من الإباحية والعادة السرية؟</p>
               </button>
               <div className="mt-8 flex flex-col gap-4 pb-20">
-                {drTaafiButton}
                 {recoveryCompanionButton}
+                {homosexualityRecoveryButton}
                 {recoveryVideosButton}
                 <IntenseUrgeButton user={user} userProfile={userProfile} />
                 <EmergencyButton user={user} userProfile={userProfile} />
@@ -347,7 +347,7 @@ const Home: React.FC<HomeProps> = ({
                 />
             )}
             {showRecoveryCompanionModal && <RecoveryCompanionModal isOpen={showRecoveryCompanionModal} onClose={() => setShowRecoveryCompanionModal(false)} />}
-            {showDrTaafiModal && <DrTaafiModal isOpen={showDrTaafiModal} onClose={() => setShowDrTaafiModal(false)} />}
+            {showHomosexualityRecoveryModal && <HomosexualityRecoveryModal isOpen={showHomosexualityRecoveryModal} onClose={() => setShowHomosexualityRecoveryModal(false)} />}
             {showRecoveryVideosModal && <RecoveryVideosModal isOpen={showRecoveryVideosModal} onClose={() => setShowRecoveryVideosModal(false)} />}
           </div>
       );
@@ -371,54 +371,25 @@ const Home: React.FC<HomeProps> = ({
                 </div>
             </header>
             <main className="pt-8">
-                <div style={containerStyle} className={`${counterContainerClasses}`}>
-                    <div className={`absolute inset-0 ${overlayClass} rounded-2xl`}></div>
-                    <div className="relative z-10 flex flex-col items-center justify-between h-full p-4 text-center min-h-[350px]">
-                        <div className="w-full flex justify-between items-center">
-                            <div className="w-8 h-8"></div> {/* Spacer */}
-                            <h2 className="text-xl font-bold text-shadow">عداد التعافي</h2>
-                            <button onClick={() => setActiveTab('counter-settings')} className="p-2 rounded-full hover:bg-white/10 transition-colors" title="إعدادات العداد">
-                                <SettingsIcon className="w-6 h-6" />
-                            </button>
-                        </div>
-                        
-                        <div className="my-4">
-                            <div className="flex justify-center items-end gap-2 text-shadow">
-                                {diff.months > 0 && (
-                                    <>
-                                        <div className="flex flex-col items-center">
-                                            <span className="text-6xl font-bold tracking-tighter">{String(diff.months).padStart(2, '0')}</span>
-                                            <span className="text-base font-semibold">{getPlural(diff.months, 'month')}</span>
-                                        </div>
-                                        <span className="text-4xl font-bold pb-2">:</span>
-                                    </>
-                                )}
-                                <div className="flex flex-col items-center">
-                                    <span className="text-6xl font-bold tracking-tighter">{String(diff.days).padStart(2, '0')}</span>
-                                    <span className="text-base font-semibold">{getPlural(diff.days, 'day')}</span>
-                                </div>
+                <div style={containerStyle} className={counterContainerClasses}>
+                    <div className={`absolute inset-0 ${overlayClass} rounded-2xl`}></div> {/* Overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <CounterIcon className="w-36 h-36 text-white/10" />
+                    </div>
+                    <div className="relative z-10">
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-end pl-2 h-10">
+                               <button onClick={() => setActiveTab('counter-settings')} className="p-2 rounded-full hover:bg-white/10"><SettingsIcon className="w-6 h-6 text-white" /></button>
                             </div>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-2 w-full text-shadow">
-                            <div className="bg-black/30 rounded-lg py-2 px-1">
-                                <div className="text-3xl font-bold tracking-tighter">{String(diff.hours).padStart(2, '0')}</div>
-                                <div className="text-sm opacity-80">{getPlural(diff.hours, 'hour')}</div>
-                            </div>
-                            <div className="bg-black/30 rounded-lg py-2 px-1">
-                                <div className="text-3xl font-bold tracking-tighter">{String(diff.minutes).padStart(2, '0')}</div>
-                                <div className="text-sm opacity-80">{getPlural(diff.minutes, 'minute')}</div>
-                            </div>
-                            <div className="bg-black/30 rounded-lg py-2 px-1">
-                                <div className="text-3xl font-bold tracking-tighter">{String(diff.seconds).padStart(2, '0')}</div>
-                                <div className="text-sm opacity-80">{getPlural(diff.seconds, 'second')}</div>
-                            </div>
+                            <ProgressBar label={`${diff.months} ${getPlural(diff.months, 'month')}`} progress={((diff.months % 12) / 12) * 100} colorClass="bg-orange-500" />
+                            <ProgressBar label={`${diff.days} ${getPlural(diff.days, 'day')}`} progress={(diff.days / 30) * 100} colorClass="bg-lime-500" />
+                            <ProgressBar label={`${diff.hours} ${getPlural(diff.hours, 'hour')}`} progress={(diff.hours / 24) * 100} colorClass="bg-blue-500" />
+                            <ProgressBar label={`${diff.minutes} ${getPlural(diff.minutes, 'minute')}`} progress={(diff.minutes / 60) * 100} colorClass="bg-pink-500" />
+                            <ProgressBar label={`${diff.seconds} ${getPlural(diff.seconds, 'second')}`} progress={(diff.seconds / 60) * 100} colorClass="bg-yellow-500" />
                         </div>
                     </div>
                 </div>
-                
                 {motivationalQuoteSection}
-
                 <button
                     onClick={() => setShowFreedomModelProgram(true)}
                     className="w-full mt-6 p-4 rounded-xl text-white text-right bg-sky-950/50 backdrop-blur-sm border border-sky-700/40 transition-all duration-300 hover:bg-sky-900/70 hover:border-sky-600"
@@ -428,8 +399,8 @@ const Home: React.FC<HomeProps> = ({
                     <p className="text-sm text-sky-400">نموذج الحرية – كيف تتخلص من الإباحية والعادة السرية؟</p>
                 </button>
                 <div className="mt-8 flex flex-col gap-4 pb-20">
-                    {drTaafiButton}
                     {recoveryCompanionButton}
+                    {homosexualityRecoveryButton}
                     {recoveryVideosButton}
                     <IntenseUrgeButton user={user} userProfile={userProfile} />
                     <EmergencyButton user={user} userProfile={userProfile} />
@@ -437,7 +408,6 @@ const Home: React.FC<HomeProps> = ({
                     <FaithDoseButton user={user} userProfile={userProfile} />
                 </div>
             </main>
-
             {showFreedomModelProgram && (
                 <FreedomModelProgram
                     isOpen={showFreedomModelProgram}
@@ -447,7 +417,7 @@ const Home: React.FC<HomeProps> = ({
                 />
             )}
             {showRecoveryCompanionModal && <RecoveryCompanionModal isOpen={showRecoveryCompanionModal} onClose={() => setShowRecoveryCompanionModal(false)} />}
-            {showDrTaafiModal && <DrTaafiModal isOpen={showDrTaafiModal} onClose={() => setShowDrTaafiModal(false)} />}
+            {showHomosexualityRecoveryModal && <HomosexualityRecoveryModal isOpen={showHomosexualityRecoveryModal} onClose={() => setShowHomosexualityRecoveryModal(false)} />}
             {showRecoveryVideosModal && <RecoveryVideosModal isOpen={showRecoveryVideosModal} onClose={() => setShowRecoveryVideosModal(false)} />}
         </div>
     );

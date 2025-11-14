@@ -1,5 +1,5 @@
 import React from 'react';
-import { CloseIcon, FriendsIcon } from '../ui/Icons.tsx';
+import { CloseIcon, CompanionIcon } from '../ui/Icons.tsx';
 
 interface RecoveryCompanionModalProps {
     isOpen: boolean;
@@ -19,7 +19,7 @@ const RecoveryCompanionModal: React.FC<RecoveryCompanionModalProps> = ({ isOpen,
             >
                 <header className="flex-shrink-0 flex justify-between items-center p-4 border-b border-purple-700/50">
                     <div className="flex items-center gap-3">
-                        <FriendsIcon className="w-6 h-6 text-purple-300" />
+                        <CompanionIcon className="w-6 h-6 text-purple-300" />
                         <h3 className="text-xl font-bold text-purple-300">رفيقك في التعافي</h3>
                     </div>
                     <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10 text-sky-300 hover:text-white">
